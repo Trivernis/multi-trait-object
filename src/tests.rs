@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::prelude::*;
+use crate::{__fat_pointer, impl_trait_object, IntoMultitrait, TryClone, TryPartialEq, RawClone, PartialEqAny};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct TestStruct {

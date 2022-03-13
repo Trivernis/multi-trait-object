@@ -15,7 +15,7 @@ been noticed yet.
 ## Usage
 
 ```rust
-use multi_trait_object::prelude::*;
+use multi_trait_object::*;
 use std::fmt::Debug;
 
 #[derive(Debug)]

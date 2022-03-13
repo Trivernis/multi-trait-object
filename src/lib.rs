@@ -23,7 +23,7 @@ pub struct FatPointer {
 /// A container to store data with the associated type and trait objects
 /// allowing for casting down to trait_impl or the concrete type
 /// ```rust
-/// use multi_trait_object::prelude::*;
+/// use multi_trait_object::*;
 /// use std::fmt::{Debug, Display};
 ///
 /// let mut mto = MultitraitObject::new(String::new());
@@ -195,8 +195,4 @@ impl<T> From<T> for MultitraitObject where T: IntoMultitrait {
     fn from(other: T) -> Self {
         other.into_multitrait()
     }
-}
-
-pub mod prelude {
-    pub use crate::*;
 }

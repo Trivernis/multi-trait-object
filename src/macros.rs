@@ -1,7 +1,6 @@
 /// Implements the `IntoMultitrait` trait on the defined type.
 /// ```rust
-/// use multi_trait_object::prelude::*;
-///
+/// use multi_trait_object::*;
 /// struct MyStruct {
 ///     a: u64,
 /// }
@@ -17,11 +16,11 @@
 #[macro_export]
 macro_rules! impl_trait_object {
     ($obj:ty, $($trt:ty),*) => {
-        impl IntoMultitrait for $obj {
-            fn into_multitrait(self) -> MultitraitObject {
-                let mut mto = MultitraitObject::new(self);
+        impl $crate::IntoMultitrait for $obj {
+            fn into_multitrait(self) -> $crate::MultitraitObject {
+                let mut mto = $crate::MultitraitObject::new(self);
                 $(
-                    register_traits!(mto, $obj, $trt);
+                    $crate::register_traits!(mto, $obj, $trt);
                 )*
 
                 mto
@@ -32,7 +31,7 @@ macro_rules! impl_trait_object {
 
 /// Registers multiple trait_impl on a multitrait object
 /// ```rust
-/// use multi_trait_object::prelude::*;
+/// use multi_trait_object::*;
 /// use std::fmt::{Debug, Display};
 ///
 /// let value = String::new();
@@ -43,7 +42,7 @@ macro_rules! impl_trait_object {
 macro_rules! register_traits {
     ($r:expr, $v:ty, $($t:ty), +) => {
         $(
-            $r._register::<$t>(__fat_pointer!($v as $t).vptr);
+            $r._register::<$t>($crate::__fat_pointer!($v as $t).vptr);
         )+
     }
 }
@@ -55,7 +54,7 @@ macro_rules! __fat_pointer {
         let x = ::std::ptr::null::<$v>() as *const $v as *const $t;
         #[allow(unused_unsafe)]
         unsafe {
-            std::mem::transmute::<_, FatPointer>(x)
+            std::mem::transmute::<_, $crate::FatPointer>(x)
         }
     }}
 }
