@@ -63,7 +63,9 @@ impl MultitraitObject {
             original_typeid: TypeId::of::<T>(),
             traits: Default::default(),
         };
-        this._register::<dyn Any>(any_vtable);
+        unsafe {
+            this._register::<dyn Any>(any_vtable);
+        }
 
         this
     }
@@ -85,6 +87,7 @@ impl MultitraitObject {
             None
         } else {
             unsafe {
+                // SAFETY: We've checked the size of the pointer
                 self._downcast_trait_mut::<T1>()
             }
         }
@@ -96,6 +99,7 @@ impl MultitraitObject {
             None
         } else {
             unsafe {
+                // SAFETY: We've checked the size of the pointer
                 self._downcast_boxed_trait::<T1>()
             }
         }
@@ -146,14 +150,14 @@ impl MultitraitObject {
 
     #[doc(hidden)]
     #[inline]
-    pub fn _register<T2: 'static + ?Sized>(&mut self, vtable_ptr: *const ()) {
+    pub unsafe fn _register<T2: 'static + ?Sized>(&mut self, vtable_ptr: *const ()) {
+        // this function is considers unsafe as there is no validation of the given raw pointer
         self.traits.insert(TypeId::of::<T2>(), vtable_ptr);
     }
 
     #[doc(hidden)]
     #[inline]
     unsafe fn _downcast_trait<T1: 'static + ?Sized>(&self) -> Option<&T1> {
-        // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
         let fat_pointer = FatPointer { data: self.data, vptr };
         let value = std::mem::transmute::<_, &&T1>(&fat_pointer);
@@ -164,7 +168,6 @@ impl MultitraitObject {
     #[doc(hidden)]
     #[inline]
     unsafe fn _downcast_trait_mut<T1: 'static + ?Sized>(&mut self) -> Option<&mut T1> {
-        // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
         let mut fat_pointer = FatPointer { data: self.data, vptr };
         let value = std::mem::transmute::<_, &mut &mut T1>(&mut fat_pointer);
@@ -175,7 +178,6 @@ impl MultitraitObject {
     #[doc(hidden)]
     #[inline]
     unsafe fn _downcast_boxed_trait<T1: 'static + ?Sized>(&mut self) -> Option<Box<T1>> {
-        // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
         let fat_pointer = FatPointer { data: self.data, vptr };
         let value = std::mem::transmute::<_, *const *mut T1>(&fat_pointer);

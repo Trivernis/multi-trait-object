@@ -20,7 +20,10 @@ macro_rules! impl_trait_object {
             fn into_multitrait(self) -> $crate::MultitraitObject {
                 let mut mto = $crate::MultitraitObject::new(self);
                 $(
-                    mto._register::<$trt>($crate::__fat_pointer!($obj as $trt).vptr);
+                    unsafe {
+                        // SAFETY: We're only passing v-tables associated with the given type
+                        mto._register::<$trt>($crate::__fat_pointer!($obj as $trt).vptr);
+                    }
                 )*
 
                 mto
@@ -58,12 +61,13 @@ macro_rules! create_object {
             };
             let mut mto = $crate::MultitraitObject::new($v);
             $(
-                let vptr = unsafe {
+                unsafe {
                     // SAFETY: We're never accessing the null value
-                    let ptr = $crate::null_ptr(&*null_ptr) as *const $t;
-                    std::mem::transmute::<_, $crate::FatPointer>(ptr).vptr
-                };
-                mto._register::<$t>(vptr);
+                    let ptr = null_ptr as *const $t;
+                    let vptr = std::mem::transmute::<_, $crate::FatPointer>(ptr).vptr;
+                    // SAFETY: We're only passing v-tables associated with the given type
+                    mto._register::<$t>(vptr);
+                }
             )+
             mto
         }
