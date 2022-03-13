@@ -94,12 +94,14 @@ impl MultitraitObject {
     }
 
     /// Downcasts the object into a reference of the given type
+    #[inline]
     pub fn downcast_ref<T: Any>(&self) -> Option<&T> {
         let any = self.downcast_trait::<dyn Any>().unwrap();
         any.downcast_ref::<T>()
     }
 
     /// Downcasts the object into a mutable reference of the given type
+    #[inline]
     pub fn downcast_mut<T: Any>(&mut self) -> Option<&mut T> {
         let any = self.downcast_trait_mut::<dyn Any>().unwrap();
         any.downcast_mut::<T>()
@@ -120,12 +122,28 @@ impl MultitraitObject {
         }
     }
 
+    /// Returns if the object stores the given concrete type
+    /// Use [MultitraitObject::implements] to check if the object
+    /// has a given trait
+    #[inline]
+    pub fn is<T: Any>(&self) -> bool {
+        self.original_typeid == TypeId::of::<T>()
+    }
+
+    /// Returns if the object implements a given trait
+    #[inline]
+    pub fn implements<T: 'static + ?Sized>(&self) -> bool {
+        self.traits.contains_key(&TypeId::of::<T>())
+    }
+
     #[doc(hidden)]
+    #[inline]
     pub fn _register<T2: 'static + ?Sized>(&mut self, vtable_ptr: *const ()) {
         self.traits.insert(TypeId::of::<T2>(), vtable_ptr);
     }
 
     #[doc(hidden)]
+    #[inline]
     unsafe fn _downcast_trait<T1: 'static + ?Sized>(&self) -> Option<&T1> {
         // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
@@ -136,6 +154,7 @@ impl MultitraitObject {
     }
 
     #[doc(hidden)]
+    #[inline]
     unsafe fn _downcast_trait_mut<T1: 'static + ?Sized>(&mut self) -> Option<&mut T1> {
         // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
@@ -146,6 +165,7 @@ impl MultitraitObject {
     }
 
     #[doc(hidden)]
+    #[inline]
     unsafe fn _downcast_boxed_trait<T1: 'static + ?Sized>(&mut self) -> Option<Box<T1>> {
         // SAFETY: Creating a fat pointer from the given v-table and data has no side effects
         let vptr = *self.traits.get(&TypeId::of::<T1>())?;
@@ -160,7 +180,7 @@ impl MultitraitObject {
 impl Drop for MultitraitObject {
     fn drop(&mut self) {
         unsafe {
-            // Safety: The Multitrait object has exclusive access to the data pointer
+            // SAFETY: The Multitrait object has exclusive access to the data pointer
             let raw = Box::from_raw(self.data);
             std::mem::drop(raw);
         }
@@ -169,6 +189,12 @@ impl Drop for MultitraitObject {
 
 pub trait IntoMultitrait {
     fn into_multitrait(self) -> MultitraitObject;
+}
+
+impl<T> From<T> for MultitraitObject where T: IntoMultitrait {
+    fn from(other: T) -> Self {
+        other.into_multitrait()
+    }
 }
 
 pub mod prelude {

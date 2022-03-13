@@ -87,3 +87,11 @@ fn it_tries_cloning() {
     let obj2 = mto2.downcast::<TestStruct>();
     assert_eq!(obj1, obj2);
 }
+
+#[test]
+fn it_returns_type_information() {
+    let mto = TestStruct::default().into_multitrait();
+    assert!(mto.is::<TestStruct>());
+    assert!(mto.implements::<dyn Debug>());
+    assert!(mto.implements::<dyn ChangeStruct>());
+}
