@@ -26,7 +26,7 @@ impl ChangeStruct for TestStruct {
     }
 }
 
-impl_trait_object!(TestStruct, dyn RawClone, dyn ChangeStruct, dyn Debug);
+impl_trait_object!(TestStruct, dyn RawClone, dyn PartialEqAny, dyn ChangeStruct, dyn Debug);
 
 #[test]
 fn it_creates_fat_pointers() {
@@ -94,4 +94,13 @@ fn it_returns_type_information() {
     assert!(mto.is::<TestStruct>());
     assert!(mto.implements::<dyn Debug>());
     assert!(mto.implements::<dyn ChangeStruct>());
+}
+
+#[test]
+fn it_tries_partial_eq() {
+    let mto = TestStruct::default().into_multitrait();
+    let mto_eq = TestStruct::default().into_multitrait();
+    let mto_neq = TestStruct {test: String::from("no"), a: 6}.into_multitrait();
+    assert!(mto.try_eq(&mto_eq).unwrap());
+    assert_eq!(mto.try_eq(&mto_neq).unwrap(), false);
 }
