@@ -30,7 +30,7 @@ macro_rules! impl_trait_object {
     }
 }
 
-/// Registers multiple traits on a multitrait object
+/// Registers multiple trait_impl on a multitrait object
 /// ```rust
 /// use multi_trait_object::prelude::*;
 /// use std::fmt::{Debug, Display};

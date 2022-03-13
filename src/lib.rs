@@ -3,6 +3,8 @@
 mod tests;
 
 pub(crate) mod macros;
+mod trait_impl;
+pub use trait_impl::*;
 
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
@@ -16,7 +18,7 @@ pub struct FatPointer {
 }
 
 /// A container to store data with the associated type and trait objects
-/// allowing for casting down to traits or the concrete type
+/// allowing for casting down to trait_impl or the concrete type
 /// ```rust
 /// use multi_trait_object::prelude::*;
 /// use std::fmt::{Debug, Display};
@@ -33,14 +35,14 @@ pub struct FatPointer {
 /// ```
 #[derive(Debug)]
 pub struct MultitraitObject {
-    data: *mut (),
-    original_typeid: TypeId,
-    traits: HashMap<TypeId, *const ()>,
+    pub(crate) data: *mut (),
+    pub(crate) original_typeid: TypeId,
+    pub(crate) traits: HashMap<TypeId, *const ()>,
 }
 
 impl MultitraitObject {
     /// Creates a new multitrait object from the given value
-    /// All traits except Any must be registered on this object
+    /// All trait_impl except Any must be registered on this object
     /// in order to access them.
     pub fn new<T: 'static + Any>(value: T) -> Self {
         let any_vtable = __fat_pointer!(T as dyn Any).vptr;
