@@ -1,4 +1,4 @@
-# Multitrait Object
+# Multitrait Object [![](https://img.shields.io/crates/v/multi-trait-object)](https://crates.io/crates/multi-trait-object) [![](https://img.shields.io/docsrs/multi-trait-object)](https://docs.rs/multi-trait-object)
 
 This crate provides a pointer type that allows casting into
 all registered traits for a given type.
