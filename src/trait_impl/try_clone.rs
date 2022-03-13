@@ -27,6 +27,8 @@ impl TryClone for MultitraitObject {
     fn try_clone(&self) -> Option<Self> {
         let clone = self.downcast_trait::<dyn RawClone>()?;
         let data_ptr = unsafe {
+            // SAFETY: We're using the pointer in the multitrait object so
+            // it won't leak memory
             clone.raw_clone()
         };
         Some(MultitraitObject {

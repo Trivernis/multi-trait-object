@@ -4,7 +4,10 @@ mod tests;
 
 pub(crate) mod macros;
 mod trait_impl;
+mod std_impl;
+
 pub use trait_impl::*;
+pub use std_impl::*;
 
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
@@ -33,7 +36,6 @@ pub struct FatPointer {
 /// let string = mto.downcast::<String>().unwrap();
 /// println!("{}", string);
 /// ```
-#[derive(Debug)]
 pub struct MultitraitObject {
     pub(crate) data: *mut (),
     pub(crate) original_typeid: TypeId,

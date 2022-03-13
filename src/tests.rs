@@ -41,6 +41,7 @@ fn it_creates_fat_pointers() {
 #[test]
 fn it_constructs() {
     TestStruct::default().into_multitrait();
+    String::from("test").into_multitrait();
 }
 
 #[test]
