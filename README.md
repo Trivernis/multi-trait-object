@@ -6,6 +6,12 @@ This is done by storing the pointer to the v-table for each
 trait implementation on the type as well as the pointer to the
 data.
 
+## Safety
+
+All unsafe parts are perfectly safe as far as my understanding goes.
+As this crate is still in an early stage there might be some side effects that haven't
+been noticed yet.
+
 ## Usage
 
 ```rust
