@@ -20,14 +20,21 @@ pub struct FatPointer {
     pub vptr: *const (),
 }
 
+#[allow(unused)]
+#[doc(hidden)]
+#[inline]
+pub unsafe fn null_ptr<T: Sized>(_value: &T) -> *const T {
+    // creates a typed clone that is actually null
+    std::ptr::null::<T>() as *const T
+}
+
 /// A container to store data with the associated type and trait objects
 /// allowing for casting down to trait_impl or the concrete type
 /// ```rust
 /// use multi_trait_object::*;
 /// use std::fmt::{Debug, Display};
 ///
-/// let mut mto = MultitraitObject::new(String::new());
-/// register_traits!(mto, String, dyn Debug, dyn Display);
+/// let mto = create_object!(String::new(), dyn Debug, dyn Display);
 ///
 /// let debug = mto.downcast_trait::<dyn Debug>().unwrap();
 /// println!("{:?}", debug);
@@ -46,6 +53,7 @@ impl MultitraitObject {
     /// Creates a new multitrait object from the given value
     /// All trait_impl except Any must be registered on this object
     /// in order to access them.
+    #[doc(hidden)]
     pub fn new<T: 'static + Any>(value: T) -> Self {
         let any_vtable = __fat_pointer!(T as dyn Any).vptr;
         let data = Box::into_raw(Box::new(value)) as *mut ();

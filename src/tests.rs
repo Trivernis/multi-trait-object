@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::{__fat_pointer, impl_trait_object, IntoMultitrait, TryClone, TryPartialEq, RawClone, PartialEqAny};
+use crate::{__fat_pointer, impl_trait_object, IntoMultitrait, TryClone, TryPartialEq, RawClone, PartialEqAny, create_object};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct TestStruct {
@@ -42,6 +42,8 @@ fn it_creates_fat_pointers() {
 fn it_constructs() {
     TestStruct::default().into_multitrait();
     String::from("test").into_multitrait();
+    let mto = create_object!(String::from("test"), dyn Debug);
+    assert!(mto.is::<String>())
 }
 
 #[test]

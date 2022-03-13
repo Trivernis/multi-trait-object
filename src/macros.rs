@@ -20,30 +20,12 @@ macro_rules! impl_trait_object {
             fn into_multitrait(self) -> $crate::MultitraitObject {
                 let mut mto = $crate::MultitraitObject::new(self);
                 $(
-                    $crate::register_traits!(mto, $obj, $trt);
+                    mto._register::<$trt>($crate::__fat_pointer!($obj as $trt).vptr);
                 )*
 
                 mto
             }
         }
-    }
-}
-
-/// Registers multiple trait_impl on a multitrait object
-/// ```rust
-/// use multi_trait_object::*;
-/// use std::fmt::{Debug, Display};
-///
-/// let value = String::new();
-/// let mut mto = MultitraitObject::new(value);
-/// register_traits!(mto, String, dyn Debug, dyn Display);
-/// ```
-#[macro_export]
-macro_rules! register_traits {
-    ($r:expr, $v:ty, $($t:ty), +) => {
-        $(
-            $r._register::<$t>($crate::__fat_pointer!($v as $t).vptr);
-        )+
     }
 }
 
@@ -57,4 +39,33 @@ macro_rules! __fat_pointer {
             std::mem::transmute::<_, $crate::FatPointer>(x)
         }
     }}
+}
+
+/// Registers multiple trait_impl on a multitrait object
+/// ```rust
+/// use multi_trait_object::*;
+/// use std::fmt::{Debug, Display};
+///
+/// let mto = create_object!(String::new(), dyn Debug, dyn Display);
+/// ```
+#[macro_export]
+macro_rules! create_object {
+    ($v:expr, $($t:ty), +) => {
+        {
+            let null_ptr = unsafe {
+                // SAFETY: We're never accessing the null value
+                $crate::null_ptr(&$v)
+            };
+            let mut mto = $crate::MultitraitObject::new($v);
+            $(
+                let vptr = unsafe {
+                    // SAFETY: We're never accessing the null value
+                    let ptr = $crate::null_ptr(&*null_ptr) as *const $t;
+                    std::mem::transmute::<_, $crate::FatPointer>(ptr).vptr
+                };
+                mto._register::<$t>(vptr);
+            )+
+            mto
+        }
+    }
 }
